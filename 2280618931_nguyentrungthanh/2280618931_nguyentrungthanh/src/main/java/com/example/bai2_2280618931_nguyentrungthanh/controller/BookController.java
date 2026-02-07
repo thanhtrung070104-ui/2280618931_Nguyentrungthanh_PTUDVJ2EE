@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
 
 @Controller // Dùng @Controller (không dùng @RestController nữa)
 @RequestMapping("/books")
@@ -30,11 +32,17 @@ public class BookController {
         return "books/add";
     }
 
-    // 3. Xử lý lưu sách mới (POST /books/add)
+   
     @PostMapping("/add")
-    public String addBook(@ModelAttribute("book") Book book) {
+    public String addBook(@Valid @ModelAttribute("book") Book book, BindingResult result, Model model) {
+        // Kiểm tra lỗi validation
+        if (result.hasErrors()) {
+            model.addAttribute("title", "Thêm sách mới");
+            return "books/add"; // Trả về lại form thêm mới nếu có lỗi
+        }
+        
         bookService.addBook(book);
-        return "redirect:/books"; // Quay về trang danh sách
+        return "redirect:/books";
     }
     
     // 4. Hiển thị Form sửa (GET /books/edit/{id})
@@ -50,8 +58,13 @@ public class BookController {
     }
 
     // 5. Xử lý lưu sách đã sửa (POST /books/edit)
-    @PostMapping("/edit")
-    public String updateBook(@ModelAttribute("book") Book book) {
+ @PostMapping("/edit")
+    public String updateBook(@Valid @ModelAttribute("book") Book book, BindingResult result, Model model) {
+        if (result.hasErrors()) {
+            model.addAttribute("title", "Sửa thông tin sách");
+            return "books/edit"; // Trả về lại form sửa nếu có lỗi
+        }
+        
         bookService.updateBook(book);
         return "redirect:/books";
     }
